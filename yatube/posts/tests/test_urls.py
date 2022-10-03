@@ -1,8 +1,9 @@
 from http import HTTPStatus
+
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 
-from ..models import Group, Post
+from posts.models import Group, Post
 
 
 User = get_user_model()
@@ -40,12 +41,12 @@ class PostURLTests(TestCase):
 
     def test_guest_urls_exists_at_desired_location(self):
         """Страницы доступные любому пользователю."""
-        urls = [
+        urls = (
             '/',
             self.GROUP_URL,
             self.PROFILE_URL,
             self.POST_URL,
-        ]
+        )
         for url in urls:
             with self.subTest(url=url):
                 response = self.guest_client.get(url)

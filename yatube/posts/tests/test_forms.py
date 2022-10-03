@@ -1,8 +1,10 @@
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.conf import settings
 
-from ..models import Post
+from posts.models import Post
+
 
 User = get_user_model()
 
@@ -10,14 +12,15 @@ User = get_user_model()
 class PostFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.user = User.objects.create_user(username='PostFormTests')
         super().setUpClass()
+        cls.user = User.objects.create_user(username='PostFormTests')
         Post.objects.create(
             text='first test post',
             author=cls.user
         )
 
     def setUp(self):
+        self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(PostFormTests.user)
 
@@ -40,6 +43,28 @@ class PostFormTests(TestCase):
         self.assertRedirects(response, expected_redirect)
         self.assertEqual(Post.objects.count(), posts_count + 1)
         self.assertTrue(
+            Post.objects.filter(
+                text='test post',
+                author=PostFormTests.user
+            ).exists()
+        )
+    
+    def test_guest_cant_create_post(self):
+        """Не авторизованный пользователь не может создать новый пост."""
+        posts_count = Post.objects.count()
+        form_data = {
+            'text': 'test post',
+            'group': '',
+        }
+        response = self.guest_client.post(
+            reverse('posts:post_create'),
+            data=form_data,
+            follow=True
+        )
+        expected_redirect = f'{reverse(settings.LOGIN_URL)}?next=/create/'
+        self.assertRedirects(response, expected_redirect)
+        self.assertEqual(Post.objects.count(), posts_count)
+        self.assertFalse(
             Post.objects.filter(
                 text='test post',
                 author=PostFormTests.user
