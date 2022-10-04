@@ -31,24 +31,27 @@ class PostFormTests(TestCase):
             'text': 'test post',
             'group': '',
         }
+        expected_redirect = reverse(
+            'posts:profile',
+            kwargs={'username': PostFormTests.user.username}
+        )
+
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
             follow=True
         )
-        expected_redirect = reverse(
-            'posts:profile',
-            kwargs={'username': PostFormTests.user.username}
-        )
+        
         self.assertRedirects(response, expected_redirect)
         self.assertEqual(Post.objects.count(), posts_count + 1)
         self.assertTrue(
             Post.objects.filter(
-                text='test post',
-                author=PostFormTests.user
+                text=form_data['text'],
+                author=PostFormTests.user,
+                group=None
             ).exists()
         )
-    
+        
     def test_guest_cant_create_post(self):
         """Не авторизованный пользователь не может создать новый пост."""
         posts_count = Post.objects.count()
@@ -56,18 +59,21 @@ class PostFormTests(TestCase):
             'text': 'test post',
             'group': '',
         }
+        expected_redirect = f'{reverse(settings.LOGIN_URL)}?next=/create/'
+
         response = self.guest_client.post(
             reverse('posts:post_create'),
             data=form_data,
             follow=True
         )
-        expected_redirect = f'{reverse(settings.LOGIN_URL)}?next=/create/'
+        
         self.assertRedirects(response, expected_redirect)
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertFalse(
             Post.objects.filter(
-                text='test post',
-                author=PostFormTests.user
+                text=form_data['text'],
+                author=PostFormTests.user,
+                group=None
             ).exists()
         )
 
@@ -80,20 +86,23 @@ class PostFormTests(TestCase):
             kwargs={'post_id': post.id}
         )
         form_data = {'text': 'edited post'}
+        expected_redirect = reverse(
+            'posts:post_detail',
+            kwargs={'post_id': post.id}
+        )
+
         response = self.authorized_client.post(
             url,
             data=form_data,
             follow=True
         )
-        expected_redirect = reverse(
-            'posts:post_detail',
-            kwargs={'post_id': post.id}
-        )
+        
         self.assertRedirects(response, expected_redirect)
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertTrue(
             Post.objects.filter(
                 id=post.id,
-                text='edited post'
+                text=form_data['text'],
+                group=None
             )
         )

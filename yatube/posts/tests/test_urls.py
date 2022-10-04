@@ -26,10 +26,12 @@ class PostURLTests(TestCase):
             author=cls.user,
             group=cls.group
         )
+        cls.INDEX_URL = '/'
         cls.POST_URL = f'/posts/{cls.post.id}/'
         cls.POST_EDIT_URL = f'/posts/{cls.post.id}/edit/'
         cls.GROUP_URL = f'/group/{cls.group.slug}/'
         cls.PROFILE_URL = f'/profile/{cls.user.username}/'
+        cls.CREATE_URL = '/create/'
 
     def setUp(self):
         self.guest_client = Client()
@@ -42,7 +44,7 @@ class PostURLTests(TestCase):
     def test_guest_urls_exists_at_desired_location(self):
         """Страницы доступные любому пользователю."""
         urls = (
-            '/',
+            self.INDEX_URL,
             self.GROUP_URL,
             self.PROFILE_URL,
             self.POST_URL,
@@ -80,7 +82,7 @@ class PostURLTests(TestCase):
 
     def test_create_url_exists_at_desired_location(self):
         """Страница /create/ доступна авторизованному пользователю."""
-        response = self.authorized_client.get('/create/')
+        response = self.authorized_client.get(self.CREATE_URL)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_create_url_redirect_anonymous_on_login_url(self):
@@ -88,7 +90,7 @@ class PostURLTests(TestCase):
         Страница /create/ перенаправляет неавторизованного
         пользователя на страницу авторизации.
         """
-        response = self.guest_client.get('/create/')
+        response = self.guest_client.get(self.CREATE_URL)
         self.assertRedirects(response, '/auth/login/?next=/create/')
 
     def test_404_url(self):
@@ -99,12 +101,12 @@ class PostURLTests(TestCase):
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
         url_names_templates = {
-            '/': 'posts/index.html',
+            self.INDEX_URL: 'posts/index.html',
             self.GROUP_URL: 'posts/group_list.html',
             self.PROFILE_URL: 'posts/profile.html',
             self.POST_URL: 'posts/post_detail.html',
             self.POST_EDIT_URL: 'posts/create_post.html',
-            '/create/': 'posts/create_post.html',
+            self.CREATE_URL: 'posts/create_post.html',
         }
         for url, template in url_names_templates.items():
             with self.subTest(url=url):
