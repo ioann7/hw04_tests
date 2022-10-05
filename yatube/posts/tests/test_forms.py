@@ -41,7 +41,7 @@ class PostFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        
+
         self.assertRedirects(response, expected_redirect)
         self.assertEqual(Post.objects.count(), posts_count + 1)
         self.assertTrue(
@@ -51,7 +51,7 @@ class PostFormTests(TestCase):
                 group=None
             ).exists()
         )
-        
+
     def test_guest_cant_create_post(self):
         """Не авторизованный пользователь не может создать новый пост."""
         posts_count = Post.objects.count()
@@ -66,7 +66,7 @@ class PostFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        
+
         self.assertRedirects(response, expected_redirect)
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertFalse(
@@ -96,7 +96,7 @@ class PostFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        
+
         self.assertRedirects(response, expected_redirect)
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertTrue(
