@@ -55,7 +55,7 @@ class PostPagesTests(TestCase):
 
     def test_post_not_in_unrelated_group(self):
         """Пост не попадает в группу к которой не принадлежит."""
-        self.assertIn(self.post, self.group.posts)
+        self.assertIn(self.post, self.group.posts.all())
         self.assertNotIn(self.post, self.group_without_posts.posts)
 
     def test_created_post_is_displayed(self):
