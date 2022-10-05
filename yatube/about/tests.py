@@ -24,10 +24,10 @@ class AboutURLTests(TestCase):
 
     def test_about_urls_exists_at_desired_location(self):
         """Страницы author и tech доступны любому пользователю."""
-        urls = [
+        urls = (
             '/about/author/',
             '/about/tech/',
-        ]
+        )
         for url in urls:
             with self.subTest(url=url):
                 response = self.guest_client.get(url)
