@@ -55,8 +55,14 @@ class PostPagesTests(TestCase):
 
     def test_post_not_in_unrelated_group(self):
         """Пост не попадает в группу к которой не принадлежит."""
-        self.assertIn(self.post, self.group.posts.all())
-        self.assertNotIn(self.post, self.group_without_posts.posts.all())
+        url = reverse(
+            'posts:group_posts',
+            kwargs={'slug': 'test-group-without-posts'}
+        )
+
+        response = self.authorized_client.get(url)
+
+        self.assertNotIn(self.post, response.context['page_obj'])
 
     def test_created_post_is_displayed(self):
         """
@@ -73,8 +79,6 @@ class PostPagesTests(TestCase):
             author=self.user,
             group=self.group
         )
-
-        self.assertNotIn(new_post, self.group_without_posts.posts.all())
         for name, url in names_urls.items():
             with self.subTest(name=name):
                 response = self.authorized_client.get(url)
