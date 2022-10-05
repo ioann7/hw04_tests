@@ -73,6 +73,7 @@ class PostPagesTests(TestCase):
             author=self.user,
             group=self.group
         )
+
         self.assertNotIn(new_post, self.group_without_posts.posts.all())
         for name, url in names_urls.items():
             with self.subTest(name=name):
@@ -119,7 +120,9 @@ class PostPagesTests(TestCase):
     def test_group_posts_page_show_correct_context(self):
         """Шаблон group_posts сформирован с правильным контекстом."""
         expected_group = self.group
+
         response = self.authorized_client.get(self.GROUP_POSTS_URL)
+
         self.assertEqual(response.context['group'], expected_group)
         for post in response.context['page_obj']:
             self.assertEqual(post.group, expected_group)
@@ -128,7 +131,9 @@ class PostPagesTests(TestCase):
         """Шаблон profile сформирован с правильным контекстом."""
         expected_author = self.user
         expected_posts_count = self.user.posts.count()
+
         response = self.authorized_client.get(self.PROFILE_URL)
+
         self.assertEqual(response.context['author'], expected_author)
         self.assertEqual(response.context['posts_count'], expected_posts_count)
         for post in response.context['page_obj']:
@@ -138,17 +143,21 @@ class PostPagesTests(TestCase):
         """Шаблон post_detail сформирован с правильным контекстом."""
         expected_post = self.post
         expected_posts_count = self.post.author.posts.count()
+
         response = self.authorized_client.get(self.POST_DETAIL_URL)
+
         self.assertEqual(response.context['post'], expected_post)
         self.assertEqual(response.context['posts_count'], expected_posts_count)
 
     def test_create_post_page_show_correct_context(self):
         """Шаблон post_create сформирован с правильным контекстом."""
-        response = self.authorized_client.get(self.POST_CREATE_URL)
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField,
         }
+
+        response = self.authorized_client.get(self.POST_CREATE_URL)
+
         for value, expected in form_fields.items():
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
@@ -156,14 +165,16 @@ class PostPagesTests(TestCase):
 
     def test_edit_post_page_show_correct_context(self):
         """Шаблон post_edit сформирован с правильным контекстом."""
-        expected_post_id = self.post.id
-        response = self.authorized_client.get(self.POST_EDIT_URL)
-        self.assertEqual(response.context['post_id'], expected_post_id)
-        self.assertEqual(response.context['is_edit'], True)
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField,
         }
+        expected_post_id = self.post.id
+
+        response = self.authorized_client.get(self.POST_EDIT_URL)
+
+        self.assertEqual(response.context['post_id'], expected_post_id)
+        self.assertEqual(response.context['is_edit'], True)
         for value, expected in form_fields.items():
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)

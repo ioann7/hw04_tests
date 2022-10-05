@@ -76,8 +76,8 @@ class PostURLTests(TestCase):
         Страница /posts/<post_id>/edit перенаправляет
         неавторизованного пользователя на страницу авторизации.
         """
-        response = self.guest_client.get(self.POST_EDIT_URL, follow=True)
         expected_url = f'/auth/login/?next={self.POST_EDIT_URL}'
+        response = self.guest_client.get(self.POST_EDIT_URL, follow=True)
         self.assertRedirects(response, expected_url)
 
     def test_create_url_exists_at_desired_location(self):
