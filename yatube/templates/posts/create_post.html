@@ -19,8 +19,9 @@
               Новый пост
             {% endif %}            
           </div>
-          <div class="card-body">        
+          <div class="card-body">     
             <form method="post"
+              enctype="multipart/form-data"
               {% if action_url %}
                 action="{% if is_edit %}
                           {% url 'posts:post_edit' post_id %}

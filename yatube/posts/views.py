@@ -51,7 +51,10 @@ def post_detail(request, post_id):
 
 @login_required
 def post_create(request):
-    form = PostForm(request.POST or None)
+    form = PostForm(
+        request.POST or None,
+        files=request.FILES or None
+    )
     if form.is_valid():
         post_obj = form.save(commit=False)
         post_obj.author = request.user
@@ -67,7 +70,11 @@ def post_edit(request, post_id):
     if request.user != instance.author:
         return redirect('posts:post_detail', post_id=post_id)
 
-    form = PostForm(request.POST or None, instance=instance)
+    form = PostForm(
+        request.POST or None,
+        files=request.FILES or None,
+        instance=instance
+    )
     if request.method == 'POST' and form.is_valid():
         form.save()
         return redirect('posts:post_detail', post_id=post_id)
