@@ -6,6 +6,7 @@
     <p>{{ group.description }}</p>
     {% for post in page_obj %}
       <article>
+        {% include 'includes/posts/author_and_date.html' %}
         {% include 'includes/posts/post.html' %}
       </article>
       {% if not forloop.last %}<hr>{% endif %}

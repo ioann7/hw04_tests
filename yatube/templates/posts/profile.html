@@ -6,12 +6,16 @@
     <h3>Всего постов: {{ posts_count }} </h3>
     {% for post in page_obj %}
       <article>
+        <ul>
+          <li>
+            Дата публикации: {{ post.pub_date|date:"d F Y" }}
+          </li>
+        </ul>
         {% include 'includes/posts/post.html' %}
-        <a href="{% url 'posts:post_detail' post.id %}">подробная информация </a>
       </article>
       {% if post.group %}
         <a href="{% url 'posts:group_posts' post.group.slug %}">все записи группы</a>
-      {% endif %}   
+      {% endif %}
       {% if not forloop.last %}<hr>{% endif %}
     {% endfor %}
     {% include 'includes/posts/paginator.html' %}
