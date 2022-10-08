@@ -13,9 +13,7 @@
         </ul>
         {% include 'includes/posts/post.html' %}
       </article>
-      {% if post.group %}
-        <a href="{% url 'posts:group_posts' post.group.slug %}">все записи группы</a>
-      {% endif %}
+      {% include 'includes/posts/all_group_posts_link.html' %}
       {% if not forloop.last %}<hr>{% endif %}
     {% endfor %}
     {% include 'includes/posts/paginator.html' %}
