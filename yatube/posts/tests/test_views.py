@@ -1,12 +1,17 @@
-from django.test import TestCase, Client
+import shutil
+import tempfile
+
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django import forms
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from posts.models import Group, Post
 
 
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 User = get_user_model()
 
 
@@ -249,3 +254,70 @@ class PaginatorViewsTest(TestCase):
                 response = self.authorized_client.get(url)
                 self.assertEqual(
                     len(response.context['page_obj']), posts_on_second_page)
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
+class PostImageViewsTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user = User.objects.create_user(username='PostImageViewsTest')
+        cls.group = Group.objects.create(
+            title='PostImageViewsTest',
+            slug='post_image_views_test'
+        )
+        small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        cls.image = SimpleUploadedFile(
+            name='small.gif',
+            content=small_gif,
+            content_type='image/gif'
+        )
+        cls.post = Post.objects.create(
+            text='some text',
+            author=cls.user,
+            group=cls.group,
+            image=cls.image
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+
+    def setUp(self):
+        self.authorized_client = Client()
+        self.authorized_client.force_login(self.user)
+
+    def test_images_show_in_context(self):
+        """
+        Изображение передаётся на страницы:
+        index, group_posts, profile, post_detail.
+        """
+        urls = (
+            reverse('posts:index'),
+            reverse(
+                'posts:group_posts',
+                kwargs={'slug': self.group.slug}
+            ),
+            reverse(
+                'posts:profile',
+                kwargs={'username': self.user.username}
+            ),
+            reverse(
+                'posts:post_detail',
+                kwargs={'post_id': self.post.id}
+            ),
+        )
+        for url in urls:
+            with self.subTest(url=url):
+                response = self.authorized_client.get(url)
+                page_obj = response.context.get('page_obj', [None])
+                post = page_obj[0] or response.context.get('post')
+                self.assertIsNotNone(post.image)
