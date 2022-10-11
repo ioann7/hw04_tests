@@ -66,7 +66,7 @@ class Post(CreatedModel):
         return self.text[:15]
 
     def get_absolute_url(self):
-        return reverse("posts:post_detail", kwargs={"id": self.id})
+        return reverse("posts:post_detail", kwargs={"post_id": self.id})
 
 
 class Comment(CreatedModel):
