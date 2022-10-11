@@ -111,7 +111,7 @@ class PostPagesTests(TestCase):
         response = self.authorized_client.get(self.INDEX_URL)
         first_object = response.context['page_obj'][0]
         post_text_0 = first_object.text
-        post_pub_date_0 = first_object.pub_date
+        post_created_0 = first_object.created
         post_author_0 = first_object.author
         post_group_0 = first_object.group
         group_title_0 = post_group_0.title
@@ -119,7 +119,7 @@ class PostPagesTests(TestCase):
         group_description_0 = post_group_0.description
 
         self.assertEqual(post_text_0, first_post.text)
-        self.assertEqual(post_pub_date_0, first_post.pub_date)
+        self.assertEqual(post_created_0, first_post.created)
         self.assertEqual(post_author_0, self.user)
         self.assertEqual(post_group_0, self.group)
         self.assertEqual(group_title_0, first_post.group.title)
