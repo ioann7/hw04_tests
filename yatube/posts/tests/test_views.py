@@ -8,7 +8,7 @@ from django import forms
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from posts.models import Group, Post
+from posts.models import Group, Post, Comment
 
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -188,6 +188,16 @@ class PostPagesTests(TestCase):
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
+
+    def test_created_comment_is_displayed(self):
+        """Созданный комментарий отображается на шаблоне post_detail."""
+        new_comment = Comment.objects.create(
+            author=self.user,
+            post=self.post,
+            text='test comment'
+        )
+        response = self.authorized_client.get(self.POST_DETAIL_URL)
+        self.assertEqual(response.context['comments'][0], new_comment)
 
 
 class PaginatorViewsTest(TestCase):

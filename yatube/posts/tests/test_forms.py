@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from posts.models import Post
+from posts.models import Post, Comment
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 User = get_user_model()
@@ -157,4 +157,54 @@ class PostFormTests(TestCase):
                 text=form_data['text'],
                 group=None
             )
+        )
+
+    def test_create_comment(self):
+        """Валидная форма создаст комментарий у поста."""
+        comments_count = Comment.objects.count()
+        post = Post.objects.first()
+        form_data = {'text': 'test comment'}
+        expected_redirect = reverse(
+            'posts:post_detail',
+            kwargs={'post_id': post.id}
+        )
+
+        response = self.authorized_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': post.id}),
+            data=form_data,
+            follow=True
+        )
+
+        self.assertRedirects(response, expected_redirect)
+        self.assertEqual(Comment.objects.count(), comments_count + 1)
+        self.assertTrue(
+            Comment.objects.filter(
+                text=form_data['text'],
+                author=self.user,
+                post=post
+            ).exists()
+        )
+
+    def test_guest_cant_create_comment(self):
+        """Не авторизованный пользователь не сможет создать комментарий."""
+        comments_count = Comment.objects.count()
+        post = Post.objects.first()
+        form_data = {'text': 'test comment'}
+        next_url = f'/posts/{post.id}/comment/'
+        expected_redirect = f'{reverse(settings.LOGIN_URL)}?next={next_url}'
+
+        response = self.guest_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': post.id}),
+            data=form_data,
+            follow=True
+        )
+
+        self.assertRedirects(response, expected_redirect)
+        self.assertEqual(Comment.objects.count(), comments_count)
+        self.assertFalse(
+            Comment.objects.filter(
+                text=form_data['text'],
+                author=self.user,
+                post=post
+            ).exists()
         )

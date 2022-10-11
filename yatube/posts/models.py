@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 
 User = get_user_model()
@@ -65,3 +66,38 @@ class Post(models.Model):
 
     def __str__(self) -> str:
         return self.text[:15]
+
+    def get_absolute_url(self):
+        return reverse("posts:post_detail", kwargs={"id": self.id})
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Пост',
+        help_text='Выберите пост к которому принадлежит комментарий'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор'
+    )
+    text = models.TextField(
+        'Текст',
+        help_text='Введите текст комментария'
+    )
+    created = models.DateTimeField(
+        'Дата комментария',
+        auto_now_add=True
+    )
+
+    class Meta:
+        verbose_name = 'comment'
+        verbose_name_plural = 'comments'
+        ordering = ('-created',)
+
+    def __str__(self) -> str:
+        return self.text[:10]
